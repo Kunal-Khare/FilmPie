@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Search from "./components/Search";
+import { Loader } from "./components/Loader";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 
@@ -7,8 +8,11 @@ const API_KEY = import.meta.env.VITE_TMBD_API_KEY;
 
 const API_OPTIONS = {
   method: "GET",
+  headers: {
+    accept: "application/json",
+    Authorization: `Bearer ${API_KEY}`,
+  },
 };
-
 const App = () => {
   const [searhTerm, setSearchTerm] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -16,31 +20,31 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchMovies = async () => {
-
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
-      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+      const endpoint = query
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+
       const response = await fetch(endpoint, API_OPTIONS);
-      if(!response.ok){
-        throw new Error('Failed to fetch movies');
+      if (!response.ok) {
+        throw new Error("Failed to fetch movies");
       }
       const data = await response.json();
 
-      if(data.Response === 'False'){
-        setErrorMessage(Error || 'Failed to fetch movies');
+      if (data.Response === "False") {
+        setErrorMessage(Error || "Failed to fetch movies");
         setMovieList([]);
         return;
       }
       setMovieList(data.results || []);
-
     } catch (error) {
       console.error(`Error fetching movies: ${error}`);
-      setErrorMessage('Error fetching movies. Please try again later.')
-    }finally{
-      setIsLoading(false); 
-
+      setErrorMessage("Error fetching movies. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -65,9 +69,21 @@ const App = () => {
           </header>
 
           <section className="all-movies">
-            <h2>All Movies</h2>
+            <h2 className="mt-[40px]">All Movies</h2>
 
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+            {isLoading ? (
+              <Loader />
+            ) : errorMessage ? (
+              <p className="text-red-500">{errorMessage}</p>
+            ) : (
+              <ul>
+                {movieList.map((movie) => (
+                  <p key={movie.id} className="text-white">
+                    {movie.title}
+                  </p>
+                ))}
+              </ul>
+            )}
           </section>
         </div>
       </div>
