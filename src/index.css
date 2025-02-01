@@ -160,3 +160,8 @@
     display: none;
   }
 }
+
+body {
+  overflow-x: hidden; /* Hides horizontal scrollbar */
+  overflow-y: auto; /* Allows vertical scrolling */
+}
